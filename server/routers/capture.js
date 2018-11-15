@@ -41,9 +41,13 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
 
   const page = await browser.newPage()
   if (cookies.length) await page.setCookie.apply(page, cookies)
-
   await page.setViewport({ width, height })
-  await page.goto(target, { waitUntil: 'networkidle0' })
+  try {
+    await page.goto(target, { waitUntil: 'networkidle0', timeout: 5000 })
+  } catch (err) {
+    if (err.name !== 'TimeoutError') throw err
+  }
+
   const buffer = await page.screenshot()
   await page.close()
   res.contentType('image/png')
