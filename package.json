@@ -1,0 +1,43 @@
+{
+  "name": "capture",
+  "version": "0.0.0",
+  "description": "A simple service for capturing rendered Web pages using puppeteer.",
+  "main": "server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koumoul-dev/capture.git"
+  },
+  "keywords": [
+    "capture",
+    "screenshot",
+    "puppeteer"
+  ],
+  "author": "Alban Mouton <alban.mouton@gmail.com>",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/koumoul-dev/capture/issues"
+  },
+  "homepage": "https://github.com/koumoul-dev/capture#readme",
+  "dependencies": {
+    "config": "^2.0.1",
+    "cookie-parser": "^1.4.3",
+    "debug": "^4.1.0",
+    "event-to-promise": "^0.8.0",
+    "express": "^4.16.4",
+    "puppeteer": "^1.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.7.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-html": "^4.0.6",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  }
+}
