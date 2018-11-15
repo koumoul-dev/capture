@@ -22,8 +22,6 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
   let width = 800
   let height = 450
 
-  const page = await browser.newPage()
-
   // transmit cookies from incoming query if we target and the current service are on same host
   let sameHost
   try {
@@ -32,17 +30,20 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
     return res.status(400).send('Failed to parse url ' + err.message)
   }
 
+  let cookies = []
   if (sameHost) {
     debug(`${target} is on same host as capture service, transmit cookies`)
-    const cookies = Object.keys(req.cookies).map(name => ({ name, value: req.cookies[name], url: target }))
-    await page.setCookie.apply(page, cookies)
+    cookies = Object.keys(req.cookies).map(name => ({ name, value: req.cookies[name], url: target }))
   } else {
     debug(`${target} is NOT on same host as capture service, do NOT transmit cookies`)
     if (config.onlySameHost) return res.status(400).send('Only same host targets are accepted')
   }
 
+  const page = await browser.newPage()
+  if (cookies.length) await page.setCookie.apply(page, cookies)
+
   await page.setViewport({ width, height })
-  await page.goto(target)
+  await page.goto(target, { waitUntil: 'networkidle0' })
   const buffer = await page.screenshot()
   await page.close()
   res.contentType('image/png')
