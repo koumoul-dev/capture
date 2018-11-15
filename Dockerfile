@@ -39,5 +39,17 @@ RUN groupadd -r captureuser && useradd -r -g captureuser -G audio,video captureu
 # Run everything after as non-privileged user.
 USER captureuser
 
+# The nodejs service
+ENV NODE_ENV production
+WORKDIR /webapp
+ADD package.json .
+ADD package-lock.json .
+RUN npm install --production
+ADD server server
+ADD config config
+ADD README.md .
+
+EXPOSE 8080
+
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node" "server"]
