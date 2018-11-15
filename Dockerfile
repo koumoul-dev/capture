@@ -27,17 +27,15 @@ RUN chmod +x /usr/local/bin/dumb-init
 #     browser.launch({executablePath: 'google-chrome-unstable'})
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
-# Install puppeteer so it's available in the container.
-RUN npm i puppeteer
-
 # Add user so we don't need --no-sandbox.
-RUN groupadd -r captureuser && useradd -r -g captureuser -G audio,video captureuser \
-    && mkdir -p /home/captureuser/Downloads \
-    && chown -R captureuser:captureuser /home/captureuser \
-    && chown -R captureuser:captureuser /node_modules
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && mkdir -p /webapp \
+    && chown -R pptruser:pptruser /webapp
 
 # Run everything after as non-privileged user.
-USER captureuser
+USER pptruser
 
 # The nodejs service
 ENV NODE_ENV production
@@ -52,4 +50,4 @@ ADD README.md .
 EXPOSE 8080
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node" "server"]
+CMD ["node", "server"]

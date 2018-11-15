@@ -6,7 +6,7 @@ const URL = require('url').URL
 const asyncWrap = require('../utils/async-wrap')
 
 exports.init = async () => {
-  return puppeteer.launch({ executablePath: 'google-chrome-unstable' })
+  return puppeteer.launch({ executablePath: 'google-chrome-unstable', args: ['--no-sandbox', '--disable-setuid-sandbox'] })
 }
 
 const router = exports.router = express.Router()
@@ -38,6 +38,7 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
     await page.setCookie.apply(page, cookies)
   } else {
     debug(`${target} is NOT on same host as capture service, do NOT transmit cookies`)
+    if (config.onlySameHost) return res.status(400).send('Only same host targets are accepted')
   }
 
   await page.setViewport({ width, height })
