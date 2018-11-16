@@ -43,7 +43,7 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
   if (cookies.length) await page.setCookie.apply(page, cookies)
   await page.setViewport({ width, height })
   try {
-    await page.goto(target, { waitUntil: 'networkidle0', timeout: 5000 })
+    await page.goto(target, { waitUntil: 'networkidle0', timeout: config.screenshotTimeout })
   } catch (err) {
     if (err.name !== 'TimeoutError') throw err
   }
