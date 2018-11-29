@@ -52,6 +52,7 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
 
   const buffer = await page.screenshot()
   await page.close()
+  await incognitoContext.close()
   res.contentType('image/png')
   res.send(buffer)
 }))
