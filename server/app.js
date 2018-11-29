@@ -1,9 +1,7 @@
 const config = require('config')
 const express = require('express')
-const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const http = require('http')
-const util = require('util')
 const eventToPromise = require('event-to-promise')
 const capture = require('./routers/capture')
 

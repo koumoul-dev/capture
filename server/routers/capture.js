@@ -39,7 +39,9 @@ router.get('/screenshot', asyncWrap(async (req, res, next) => {
     if (config.onlySameHost) return res.status(400).send('Only same host targets are accepted')
   }
 
-  const page = await browser.newPage()
+  // Create page in incognito context so that cookies are not shared
+  const incognitoContext = await browser.createIncognitoBrowserContext()
+  const page = await incognitoContext.newPage()
   if (cookies.length) await page.setCookie.apply(page, cookies)
   await page.setViewport({ width, height })
   try {
