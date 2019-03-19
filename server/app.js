@@ -9,7 +9,10 @@ const app = express()
 
 app.use(cookieParser())
 // In production CORS is taken care of by the reverse proxy if necessary
-if (process.env.NODE_ENV === 'development') app.use(require('cors')())
+if (process.env.NODE_ENV === 'development') {
+  app.use('/test', express.static('./test'))
+  app.use(require('cors')())
+}
 
 const server = http.createServer(app)
 

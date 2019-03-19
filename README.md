@@ -15,7 +15,7 @@ Install dependencies without downloading chromium:
 
 Then start the server:
 
-    DEBUG=capture npm start
+    npm run dev
 
 And open an [example](http://localhost:5607/api/v1/screenshot?target=https://koumoul-dev.github.io/data-fair/)
 

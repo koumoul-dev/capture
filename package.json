@@ -5,7 +5,8 @@
   "main": "server",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server"
+    "start": "node server",
+    "dev": "NODE_ENV=development DEBUG=capture node server"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "puppeteer": "^1.10.0"
   },
   "devDependencies": {
+    "cors": "^2.8.5",
     "eslint": "^5.7.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-loader": "^2.1.1",
