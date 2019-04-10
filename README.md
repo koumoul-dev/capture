@@ -17,7 +17,7 @@ Then start the server:
 
     npm run dev
 
-And open an [example](http://localhost:5607/api/v1/screenshot?target=https://koumoul-dev.github.io/data-fair/)
+And open an [test page](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
 
 Or testing the docker image:
 

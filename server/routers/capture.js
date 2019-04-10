@@ -34,6 +34,58 @@ function auth(req, res, next) {
   next()
 }
 
+// quite complex strategy to wait for the page to be ready for capture.
+// it can either explitly call a triggerCapture function or we wait for idle network + 1s
+async function waitForPage(page, target) {
+  // Prepare a function that the page can call to signal that it is ready for capture
+  let captureTriggered = false
+  let timeoutReached = false
+  const triggerCapture = new Promise(resolve => page.exposeFunction('triggerCapture', () => {
+    captureTriggered = true
+    resolve()
+  }))
+
+  try {
+    // wait for network inactivity, but it can be interrupted if triggerCapture is called
+    await Promise.race([
+      page.goto(target, { waitUntil: 'networkidle0', timeout: config.screenshotTimeout }),
+      triggerCapture
+    ])
+    if (captureTriggered) debug(`Capture was expicitly triggered by window.triggerCapture call for ${target}`)
+    else debug(`network was idle during 500ms for ${target}`)
+  } catch (err) {
+    if (err.name !== 'TimeoutError') throw err
+    else {
+      debug(`timeout of ${config.screenshotTimeout} was reached for ${target}`)
+      timeoutReached = true
+    }
+  }
+
+  if (captureTriggered || timeoutReached) {
+    // we are done here, capture was already explicitly triggered or we already waited for a long time
+  } else {
+    // Adapt the wait strategy based on the x-capture meta
+    let captureMeta
+    try {
+      captureMeta = await page.$eval(`head > meta[name='x-capture']`, el => el.content)
+    } catch (err) {
+      // nothing to do, meta is probably absent
+    }
+    if (captureMeta === 'trigger') {
+      debug(`wait for explicit window.triggerCapture call after network was found idle for ${target}`)
+      await Promise.race([
+        triggerCapture,
+        new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
+      ])
+      if (captureTriggered) debug(`Capture was expicitly triggered by window.triggerCapture call for ${target}`)
+      else debug(`timeout of ${config.screenshotTimeout} was reached for ${target}`)
+    } else {
+      debug(`wait 1000ms more after idle network for safety ${target}`)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+  }
+}
+
 router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
   const browser = req.app.get('browser')
 
@@ -58,38 +110,8 @@ router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
 
   try {
     if (req.cookies) await page.setCookie.apply(page, req.cookies)
-
     await page.setViewport({ width, height })
-
-    // Prepare a function that the page can call to signal that it is ready for capture
-    const triggerCapture = new Promise(resolve => page.exposeFunction('triggerCapture', resolve))
-
-    try {
-      // wait for network inactivity, but it can be interrupted if triggerCapture is called
-      await Promise.race([
-        page.goto(target, { waitUntil: 'networkidle0', timeout: config.screenshotTimeout }),
-        triggerCapture
-      ])
-    } catch (err) {
-      if (err.name !== 'TimeoutError') return next(err)
-    }
-
-    // Adapt the wait strategy based on the x-capture meta
-    let captureMeta
-    try {
-      captureMeta = await page.$eval(`head > meta[name='x-capture']`, el => el.content)
-    } catch (err) {
-      // nothing to do, meta is probably absent
-    }
-    if (captureMeta === 'trigger') {
-      await Promise.race([
-        triggerCapture,
-        new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
-      ])
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-
+    await waitForPage(page, target)
     const buffer = await page.screenshot()
     res.contentType('image/png')
     res.send(buffer)
@@ -119,36 +141,7 @@ router.get('/print', auth, asyncWrap(async (req, res, next) => {
   const page = await incognitoContext.newPage()
   try {
     if (req.cookies) await page.setCookie.apply(page, req.cookies)
-
-    // Prepare a function that the page can call to signal that it is ready for capture
-    const triggerCapture = new Promise(resolve => page.exposeFunction('triggerCapture', resolve))
-
-    try {
-      // wait for network inactivity, but it can be interrupted if triggerCapture is called
-      await Promise.race([
-        page.goto(target, { waitUntil: 'networkidle0', timeout: config.screenshotTimeout }),
-        triggerCapture
-      ])
-    } catch (err) {
-      if (err.name !== 'TimeoutError') return next(err)
-    }
-
-    // Adapt the wait strategy based on the x-capture meta
-    let captureMeta
-    try {
-      captureMeta = await page.$eval(`head > meta[name='x-capture']`, el => el.content)
-    } catch (err) {
-      // nothing to do, meta is probably absent
-    }
-    if (captureMeta === 'trigger') {
-      await Promise.race([
-        triggerCapture,
-        new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
-      ])
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-
+    await waitForPage(page, target)
     const pdfOptions = { landscape, pageRanges, format, margin: {}, printBackground: true }
     /* TODO: this is a work in progress
     // see https://github.com/GoogleChrome/puppeteer/issues/1853
