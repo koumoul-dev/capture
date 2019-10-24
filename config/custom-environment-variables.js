@@ -11,5 +11,9 @@ module.exports = {
   screenshotTimeout: {
     __name: 'SCREENSHOT_TIMEOUT',
     __format: 'json'
+  },
+  concurrency: {
+    __name: 'CONCURRENCY',
+    __format: 'json'
   }
 }

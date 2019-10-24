@@ -17,11 +17,11 @@ Then start the server:
 
     npm run dev
 
-And open an [test page](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
+And open a [test page](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
 
 Or testing the docker image:
 
     docker build -t capture .
-    docker run -d -p 8080:8080 e DEBUG=capture -e ONLY_SAME_HOST=false --name capture capture
+    docker run --rm -d -p 8080:8080 -e DEBUG=capture -e ONLY_SAME_HOST=false --name capture capture
 
 And open an [example](http://localhost:8080/api/v1/screenshot?target=https://koumoul-dev.github.io/data-fair/)

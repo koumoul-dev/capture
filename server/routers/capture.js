@@ -1,10 +1,13 @@
+const config = require('config')
 const express = require('express')
 const debug = require('debug')('capture')
-const config = require('config')
 const puppeteer = require('puppeteer')
 const URL = require('url').URL
-const asyncWrap = require('../utils/async-wrap')
+const PQueue = require('p-queue').default
+const { concurrentAsyncWrap } = require('../utils/async-wrap')
 // const headerFooter = require('../utils/header-footer')
+
+const queue = new PQueue({ concurrency: config.concurrency })
 
 let _closed, _browser
 let browserPromise
@@ -103,7 +106,7 @@ async function waitForPage(page, target) {
   }
 }
 
-router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
+router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next) => {
   const browser = await browserPromise
   const target = req.query.target
   debug(`capture screenshot for target url ${target}`)
@@ -139,7 +142,7 @@ router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
   }
 }))
 
-router.get('/print', auth, asyncWrap(async (req, res, next) => {
+router.get('/print', auth, concurrentAsyncWrap(queue, async (req, res, next) => {
   const browser = await browserPromise
   const target = req.query.target
   debug(`print page for target url ${target}`)
