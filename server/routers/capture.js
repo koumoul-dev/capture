@@ -6,8 +6,25 @@ const URL = require('url').URL
 const asyncWrap = require('../utils/async-wrap')
 // const headerFooter = require('../utils/header-footer')
 
-exports.init = async () => {
-  return puppeteer.launch({ executablePath: 'google-chrome-unstable', args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+let _closed, _browser
+let browserPromise
+
+exports.init = async (app) => {
+  browserPromise = puppeteer.launch({ executablePath: 'google-chrome-unstable', args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+  _browser = await browserPromise
+
+  // auto reconnection, cf https://github.com/GoogleChrome/puppeteer/issues/4428
+  _browser.on('disconnected', () => {
+    if (!_closed) {
+      console.log('Browser was disconnected for some reason, reconnect')
+      exports.init()
+    }
+  })
+}
+
+exports.close = async () => {
+  _closed = true
+  await _browser.close()
 }
 
 const router = exports.router = express.Router()
@@ -87,8 +104,7 @@ async function waitForPage(page, target) {
 }
 
 router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
-  const browser = req.app.get('browser')
-
+  const browser = await browserPromise
   const target = req.query.target
   debug(`capture screenshot for target url ${target}`)
 
@@ -124,8 +140,7 @@ router.get('/screenshot', auth, asyncWrap(async (req, res, next) => {
 }))
 
 router.get('/print', auth, asyncWrap(async (req, res, next) => {
-  const browser = req.app.get('browser')
-
+  const browser = await browserPromise
   const target = req.query.target
   debug(`print page for target url ${target}`)
 

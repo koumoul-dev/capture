@@ -20,12 +20,14 @@ app.use('/api/v1', capture.router)
 
 // Run app and return it in a promise
 exports.run = async () => {
-  app.set('browser', await capture.init())
+  await capture.init()
   server.listen(config.port)
   await eventToPromise(server, 'listening')
   return app
 }
 
 exports.stop = async() => {
-  await app.get('browser').close()
+  server.close()
+  await eventToPromise(server, 'close')
+  await capture.close()
 }
