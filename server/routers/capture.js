@@ -132,7 +132,8 @@ router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next
     await page.setViewport({ width, height })
     await waitForPage(page, target)
     const buffer = await page.screenshot()
-    res.contentType('image/png')
+    res.type('png')
+    if (req.query.filename) res.attachment(req.query.filename)
     res.send(buffer)
   } catch (err) {
     next(err)
@@ -169,7 +170,8 @@ router.get('/print', auth, concurrentAsyncWrap(queue, async (req, res, next) => 
       pdfOptions.margin.bottom = '40px'
     } */
     const buffer = await page.pdf(pdfOptions)
-    res.contentType('application/pdf')
+    res.type('pdf')
+    if (req.query.filename) res.attachment(req.query.filename)
     res.send(buffer)
   } catch (err) {
     next(err)
