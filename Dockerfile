@@ -46,6 +46,7 @@ RUN npm install --production
 ADD server server
 ADD config config
 ADD README.md .
+ADD test test
 
 EXPOSE 8080
 

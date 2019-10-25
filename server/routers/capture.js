@@ -106,6 +106,28 @@ async function waitForPage(page, target) {
   }
 }
 
+async function setPageLocale(page, lang, timezone) {
+  debug(`Localization lang=${lang}, timezone=${timezone}`)
+  await page.emulateTimezone(timezone)
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': lang
+  })
+  await page.evaluateOnNewDocument((lang) => {
+    const langs = [lang]
+    if (lang.includes('-')) langs.push(lang.split('-')[0])
+    Object.defineProperty(navigator, 'language', {
+      get: function() {
+        return lang
+      }
+    })
+    Object.defineProperty(navigator, 'languages', {
+      get: function() {
+        return langs
+      }
+    })
+  }, lang)
+}
+
 router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next) => {
   const browser = await browserPromise
   const target = req.query.target
@@ -128,6 +150,7 @@ router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next
   const page = await incognitoContext.newPage()
 
   try {
+    setPageLocale(page, req.query.lang || config.defaultLang, req.query.timezone || config.defaultTimezone)
     if (req.cookies) await page.setCookie.apply(page, req.cookies)
     await page.setViewport({ width, height })
     await waitForPage(page, target)
@@ -159,6 +182,7 @@ router.get('/print', auth, concurrentAsyncWrap(queue, async (req, res, next) => 
   const incognitoContext = await browser.createIncognitoBrowserContext()
   const page = await incognitoContext.newPage()
   try {
+    setPageLocale(page, req.query.lang || config.defaultLang, req.query.timezone || config.defaultTimezone)
     if (req.cookies) await page.setCookie.apply(page, req.cookies)
     await waitForPage(page, target)
     const pdfOptions = { landscape, pageRanges, format, margin: {}, printBackground: true }

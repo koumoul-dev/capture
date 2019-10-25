@@ -17,11 +17,12 @@ Then start the server:
 
     npm run dev
 
-And open a [test page](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
+Or build and run the docker image:
 
-Or testing the docker image:
+    docker build -t capture . && docker run --rm -it -p 5607:5607 -e DEBUG=capture -e ONLY_SAME_HOST=false -e PORT=5607 --name capture capture
 
-    docker build -t capture .
-    docker run --rm -d -p 8080:8080 -e DEBUG=capture -e ONLY_SAME_HOST=false --name capture capture
+Check the service with these examples:
 
-And open an [example](http://localhost:8080/api/v1/screenshot?target=https://koumoul-dev.github.io/data-fair/)
+  - [simple screenshot](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
+  - [custom size](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&width=200&height=150)
+  - [custom lang](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&lang=en)

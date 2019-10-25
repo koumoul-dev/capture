@@ -15,5 +15,7 @@ module.exports = {
   concurrency: {
     __name: 'CONCURRENCY',
     __format: 'json'
-  }
+  },
+  defaultLang: 'DEFAULT_LANG',
+  defaultTimezone: 'DEFAULT_TIMEZONE'
 }

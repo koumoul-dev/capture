@@ -4,14 +4,22 @@
     <meta charset="utf-8">
     <meta name="keywords" content="HTML, CSS, XML, XHTML, JavaScript">
     <meta name="x-capture" content="trigger">
+    <script src="https://momentjs.com/downloads/moment-with-locales.min.js"></script>
     <title>Test page 1</title>
   </head>
   <body>
     <h1>Test page 1</h1>
+    <p id="lang"></p>
+    <p id="date"></p>
     <script>
       setTimeout(() => {
         window.triggerCapture()
       }, 100)
+
+      document.getElementById('lang').innerHTML = JSON.stringify(navigator.languages)
+      moment.locale(navigator.language)
+      const d = moment()
+      document.getElementById('date').innerHTML = d.format('lll')
     </script>
   </body>
 </html>
