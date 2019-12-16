@@ -1,0 +1,14 @@
+[{
+    "id": "superadmin",
+    "email": "superadmin@test.com",
+    "isAdmin": true
+}, {
+    "id": "admin1",
+    "email": "admin1@test.com"
+}, {
+    "id": "user1",
+    "email": "user1@test.com"
+}, {
+    "id": "admin2",
+    "email": "admin2@test.com"
+}]
