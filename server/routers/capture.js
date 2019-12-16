@@ -3,11 +3,8 @@ const express = require('express')
 const debug = require('debug')('capture')
 const puppeteer = require('puppeteer')
 const URL = require('url').URL
-const PQueue = require('p-queue').default
-const { concurrentAsyncWrap } = require('../utils/async-wrap')
+const { asyncWrap, concurrentAsyncWrap } = require('../utils/async-wrap')
 // const headerFooter = require('../utils/header-footer')
-
-const queue = new PQueue({ concurrency: config.concurrency })
 
 let _closed, _browser
 let browserPromise
@@ -32,7 +29,14 @@ exports.close = async () => {
 
 const router = exports.router = express.Router()
 
-function auth(req, res, next) {
+async function auth(req, res, next) {
+  if (!req.app.get('session')) {
+    console.error('WARNING: It is recommended to define directoryUrl parameter')
+  } else {
+    await req.app.get('session').auth(req, res, () => {})
+    if (!req.user && req.query.key !== config.secretKeys.capture) return res.status(401).send()
+  }
+
   if (!req.query.target) return res.status(400).send('parameter "target" is required')
   const target = req.query.target
 
@@ -128,7 +132,7 @@ async function setPageLocale(page, lang, timezone) {
   }, lang)
 }
 
-router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next) => {
+router.get('/screenshot', asyncWrap(auth), concurrentAsyncWrap(async (req, res, next) => {
   const browser = await browserPromise
   const target = req.query.target
   debug(`capture screenshot for target url ${target}`)
@@ -166,7 +170,7 @@ router.get('/screenshot', auth, concurrentAsyncWrap(queue, async (req, res, next
   }
 }))
 
-router.get('/print', auth, concurrentAsyncWrap(queue, async (req, res, next) => {
+router.get('/print', asyncWrap(auth), concurrentAsyncWrap(async (req, res, next) => {
   const browser = await browserPromise
   const target = req.query.target
   debug(`print page for target url ${target}`)

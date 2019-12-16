@@ -23,9 +23,9 @@ Or build and run the docker image:
 
 Check the service with these examples:
 
-  - [simple screenshot](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html)
-  - [custom size](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&width=200&height=150)
-  - [custom lang](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&lang=en)
-  - [custom timezone](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&timezone=America/Bogota)
-  - [download with custom filename](http://localhost:5607/api/v1/screenshot?target=http://localhost:5607/test/test1.html&filename=test.png)
-  - [simple pdf print](http://localhost:5607/api/v1/print?target=http://localhost:5607/test/test1.html)
+  - [simple screenshot](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/test1.html)
+  - [custom size](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/test1.html&width=200&height=150)
+  - [custom lang](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/test1.html&lang=en)
+  - [custom timezone](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/test1.html&timezone=America/Bogota)
+  - [download with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/test1.html&filename=test.png)
+  - [simple pdf print](http://localhost:5607/api/v1/print?key=capture&target=http://localhost:5607/test/test1.html)

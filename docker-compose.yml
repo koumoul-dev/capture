@@ -1,0 +1,25 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:4.0
+    ports:
+      - 27017:27017
+
+  sd:
+    image: koumoul/simple-directory:1
+    network_mode: host
+    ports:
+      - 8080
+      - 1080
+      - 1025
+    environment:
+      - DEBUG=webhooks
+      - ADMINS=["superadmin@test.com"]
+      - PUBLIC_URL=http://localhost:5607/simple-directory
+      - MAILDEV_ACTIVE=true
+      - STORAGE_TYPE=file
+      - NUXT_BUILD_BLOCKING=false
+      - NO_UI=${NO_UI}
+    volumes:
+      - ./test/resources/users.json:/webapp/data/users.json
+      - ./test/resources/organizations.json:/webapp/data/organizations.json
