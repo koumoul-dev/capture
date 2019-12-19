@@ -21,6 +21,6 @@ module.exports = {
   defaultLang: 'DEFAULT_LANG',
   defaultTimezone: 'DEFAULT_TIMEZONE',
   secretKeys: {
-    sendMails: 'SECRET_CAPTURE'
+    capture: 'SECRET_CAPTURE'
   }
 }
