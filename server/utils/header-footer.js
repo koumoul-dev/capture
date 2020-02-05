@@ -1,25 +1,10 @@
-exports.footer = () => `
-<style>
-.footer {
-  position: absolute;
-  width: 100%;
-  background-color: blue;
-  font-size: 12px;
-  color: black;
-  margin: 6px;
-  z-index:1000;
-}
-.footer .right {
-  float: right;
-}
-</style>
-
-<div class="footer">
-  <div class="left">
-    <span>TEST</span>
+exports.footer = (text) => `
+  <div style="font-size:10px;width:100%;margin-top:10px;margin-left:1.5cm;margin-right:1.5cm;">
+    <div style="float:left;">
+      <span>${text || ''}</span>
+    </div>
+    <div style="float:right;">
+      <span class="pageNumber"></span>/<span class="totalPages"></span>
+    </div>
   </div>
-  <div class="right">
-    <span class="pageNumber"></span>/<span class="totalPages"></span>
-  </div>
-</div>
 `

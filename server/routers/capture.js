@@ -4,7 +4,7 @@ const debug = require('debug')('capture')
 const puppeteer = require('puppeteer')
 const URL = require('url').URL
 const { asyncWrap, concurrentAsyncWrap } = require('../utils/async-wrap')
-// const headerFooter = require('../utils/header-footer')
+const headerFooter = require('../utils/header-footer')
 
 let _closed, _browser
 let browserPromise
@@ -177,9 +177,14 @@ router.get('/print', asyncWrap(auth), concurrentAsyncWrap(async (req, res, next)
 
   // read query params
   const landscape = req.query.landscape === 'true'
-  // const footer = req.query.footer === 'true'
+  const showFooter = !!req.query.footer
+  const footer = req.query.footer === 'true' ? '' : req.query.footer
   const pageRanges = req.query.pageRanges || ''
   const format = req.query.format || 'A4'
+  const left = req.query.left || '1.5cm'
+  const right = req.query.right || '1.5cm'
+  const top = req.query.top || '1.5cm'
+  const bottom = req.query.bottom || '1.5cm'
 
   // Create page in incognito context so that cookies are not shared
   // make sure we always close the page and the incognito context
@@ -189,14 +194,12 @@ router.get('/print', asyncWrap(auth), concurrentAsyncWrap(async (req, res, next)
     setPageLocale(page, req.query.lang || config.defaultLang, req.query.timezone || config.defaultTimezone)
     if (req.cookies) await page.setCookie.apply(page, req.cookies)
     await waitForPage(page, target)
-    const pdfOptions = { landscape, pageRanges, format, margin: {}, printBackground: true }
-    /* TODO: this is a work in progress
-    // see https://github.com/GoogleChrome/puppeteer/issues/1853
-    if (footer) {
+    const pdfOptions = { landscape, pageRanges, format, margin: { left, right, top, bottom }, printBackground: true }
+    if (showFooter) {
       pdfOptions.displayHeaderFooter = true
-      pdfOptions.footerTemplate = headerFooter.footer()
-      pdfOptions.margin.bottom = '40px'
-    } */
+      pdfOptions.headerTemplate = ' '
+      pdfOptions.footerTemplate = headerFooter.footer(footer)
+    }
     const buffer = await page.pdf(pdfOptions)
     res.type('pdf')
     if (req.query.filename) res.attachment(req.query.filename)
