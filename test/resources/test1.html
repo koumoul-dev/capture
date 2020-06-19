@@ -11,6 +11,7 @@
     <h1>Test page 1</h1>
     <p id="lang"></p>
     <p id="date"></p>
+    <p id="cookie"></p>
     <p>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vulputate blandit volutpat. Integer auctor aliquam tellus, in mollis elit placerat vel. Donec hendrerit purus quis rhoncus malesuada. Nullam ut massa et risus porttitor aliquam sed et lectus. Etiam finibus, nisi nec dignissim dapibus, metus nulla rutrum enim, at dictum augue felis vel arcu. Maecenas eros est, ullamcorper a quam in, volutpat congue lacus. Nunc enim dui, pharetra vel eleifend vitae, rhoncus vel risus. Nunc metus neque, mattis in tellus et, cursus viverra odio. Phasellus ipsum quam, dignissim ut ex eget, egestas laoreet nisi. Sed nulla nisl, convallis ut porttitor id, pellentesque id dui. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In vel massa risus.
     </p>
@@ -50,6 +51,7 @@
       moment.locale(navigator.language)
       const d = moment()
       document.getElementById('date').innerHTML = d.format('lll')
+      document.getElementById('cookie').innerHTML = document.cookie
     </script>
   </body>
 </html>
