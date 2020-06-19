@@ -33,7 +33,7 @@
     "express": "^4.16.4",
     "generic-pool": "^3.7.1",
     "http-proxy-middleware": "^0.20.0",
-    "puppeteer": "^2.0.0"
+    "puppeteer": "^4.0.0"
   },
   "devDependencies": {
     "cors": "^2.8.5",
