@@ -3,25 +3,6 @@ const puppeteer = require('puppeteer')
 const genericPool = require('generic-pool')
 const debug = require('debug')('capture')
 
-// start / stop a single puppeteer browser
-let _closed, _browser
-exports.start = async (app) => {
-  _browser = await puppeteer.launch({ executablePath: 'google-chrome-unstable', args: ['--no-sandbox', '--disable-setuid-sandbox'] })
-  // auto reconnection, cf https://github.com/GoogleChrome/puppeteer/issues/4428
-  _browser.on('disconnected', () => {
-    if (!_closed) {
-      console.log('Browser was disconnected for some reason, reconnect')
-      exports.init()
-    }
-  })
-}
-exports.stop = async () => {
-  _closed = true
-  if (_browser) await _browser.close()
-  await contextPool.drain()
-  contextPool.clear()
-}
-
 const contextFactory = {
   async create() {
     // create pages in incognito contexts so that cookies are not shared
@@ -32,10 +13,38 @@ const contextFactory = {
     await context.close()
   }
 }
-const contextPool = genericPool.createPool(contextFactory, { min: 1, max: config.concurrency, autostart: false })
+
+// start / stop a single puppeteer browser
+let _closed, _browser, _contextPool
+exports.start = async (app) => {
+  _browser = await puppeteer.launch({ executablePath: 'google-chrome-unstable', args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+  _contextPool = genericPool.createPool(contextFactory, { min: 1, max: config.concurrency })
+
+  // auto reconnection, cf https://github.com/GoogleChrome/puppeteer/issues/4428
+  _browser.on('disconnected', async () => {
+    if (!_closed) {
+      console.log('Browser was disconnected for some reason, reconnect')
+      try {
+        await _contextPool.drain()
+        _contextPool.clear()
+      } catch (err) {
+        console.log('Error while draining replaced contexts pool', err)
+      }
+      exports.start()
+    }
+  })
+}
+exports.stop = async () => {
+  _closed = true
+  if (_browser) await _browser.close()
+  if (_contextPool) {
+    await _contextPool.drain()
+    _contextPool.clear()
+  }
+}
 
 exports.open = async (target, lang, timezone, cookies, viewport) => {
-  const context = await contextPool.acquire()
+  const context = await _contextPool.acquire()
   let page
   try {
     page = await context.newPage()
@@ -63,10 +72,10 @@ const cleanContext = async (page, cookies, context) => {
     const otherCookies = await page.cookies()
     await page.deleteCookie.apply(page, otherCookies)
     await page.close()
-    contextPool.release(context)
+    _contextPool.release(context)
   } catch (err) {
     console.error('Failed to clean page properly, do not reuse this context', err)
-    contextPool.destroy(context)
+    _contextPool.destroy(context)
   }
 }
 
