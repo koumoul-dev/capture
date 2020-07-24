@@ -43,35 +43,54 @@ exports.stop = async () => {
   }
 }
 
+async function openInContext(context, target, lang, timezone, cookies, viewport) {
+  const page = await context.newPage()
+  await setPageLocale(page, lang || config.defaultLang, timezone || config.defaultTimezone)
+  if (cookies) await page.setCookie.apply(page, cookies)
+  if (viewport) await page.setViewport(viewport)
+  await waitForPage(page, target)
+  return page
+}
+
 exports.open = async (target, lang, timezone, cookies, viewport) => {
   const context = await _contextPool.acquire()
   let page
   try {
-    page = await context.newPage()
-    await setPageLocale(page, lang || config.defaultLang, timezone || config.defaultTimezone)
-    if (cookies) await page.setCookie.apply(page, cookies)
-    if (viewport) await page.setViewport(viewport)
-    await waitForPage(page, target)
+    await Promise.race([
+      openInContext(context, target, lang, timezone, cookies, viewport).then(p => { page = p }),
+      new Promise(resolve => setTimeout(resolve, config.screenshotTimeout * 2))
+    ])
+    if (!page) throw new Error(`Failed to open "${target}" in context before timeout`)
     return page
   } catch (err) {
-    await cleanContext(page, cookies, context)
+    await safeCleanContext(page, cookies, context)
     throw err
   }
 }
 
 // make sure we always close the page and release the incognito context for next page
 exports.close = (page, cookies) => {
-  cleanContext(page, cookies, page.browserContext())
+  safeCleanContext(page, cookies, page.browserContext())
 }
 
 const cleanContext = async (page, cookies, context) => {
+  // always empty cookies to prevent inheriting them in next use of the context
+  // to be extra sure we delete the cookies that were explicitly passed to page, and check for other cookies that might have been created
+  await page.deleteCookie.apply(page, cookies)
+  const otherCookies = await page.cookies()
+  await page.deleteCookie.apply(page, otherCookies)
+  await page.close()
+}
+
+const safeCleanContext = async (page, cookies, context) => {
+  if (!page) return _contextPool.destroy(context)
   try {
-    // always empty cookies to prevent inheriting them in next use of the context
-    // to be extra sure we delete the cookies that were explicitly passed to page, and check for other cookies that might have been created
-    await page.deleteCookie.apply(page, cookies)
-    const otherCookies = await page.cookies()
-    await page.deleteCookie.apply(page, otherCookies)
-    await page.close()
+    let timedout
+    await Promise.race([
+      await cleanContext(page, cookies, context),
+      new Promise(resolve => setTimeout(() => { resolve(); timedout = true }, 2000))
+    ])
+    if (timedout) throw new Error('timed out while cleaning page context')
     _contextPool.release(context)
   } catch (err) {
     console.error('Failed to clean page properly, do not reuse this context', err)

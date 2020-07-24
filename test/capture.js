@@ -90,6 +90,6 @@ describe('capture', () => {
     assert.equal(res.status, 200)
     assert.equal(res.headers['content-type'], 'application/pdf')
     const content = await pdfParse(res.data)
-    assert.ok(content.text.includes('count:4'))
+    assert.ok(content.text.includes('count3') || content.text.includes('count:4') || content.text.includes('count:5'))
   })
 })

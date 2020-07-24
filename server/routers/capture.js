@@ -55,7 +55,12 @@ router.get('/screenshot', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   const page = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies, { width, height })
   debug(`page is opened ${target}`)
   try {
-    const buffer = await page.screenshot()
+    let buffer
+    await Promise.race([
+      page.screenshot().then(b => { buffer = b }),
+      new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
+    ])
+    if (!buffer) throw new Error(`Failed to take screenshot of page "${target}" before timeout`)
     debug(`screenshot is taken ${target}`)
     res.type('png')
     if (req.query.filename) res.attachment(req.query.filename)
@@ -89,7 +94,12 @@ router.get('/print', asyncWrap(auth), asyncWrap(async (req, res, next) => {
       pdfOptions.headerTemplate = ' '
       pdfOptions.footerTemplate = headerFooter.footer(footer)
     }
-    const buffer = await page.pdf(pdfOptions)
+    let buffer
+    await Promise.race([
+      page.pdf(pdfOptions).then(b => { buffer = b }),
+      new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
+    ])
+    if (!buffer) throw new Error(`Failed to make print of page "${target}" before timeout`)
     debug(`print is taken ${target}`)
     res.type('pdf')
     if (req.query.filename) res.attachment(req.query.filename)
