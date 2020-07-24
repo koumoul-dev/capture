@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="HTML, CSS, XML, XHTML, JavaScript">
+    <title>Test timeout</title>
+  </head>
+  <body>
+    <h1>Test timeout</h1>
+    <p>
+      count:<span id="count" />
+    </p>
+    <p>
+      This page is never idle.
+    </p>
+    <script>
+      async function main() {
+        let i = 0
+        while(true) {
+          document.getElementById('count').innerHTML = '' + i
+          i++
+          await fetch('https://raw.githubusercontent.com/koumoul-dev/capture/master/README.md')
+          await new Promise(resolve => setTimeout(resolve, 400))
+        }
+      }
+      main()
+    </script>
+  </body>
+</html>

@@ -84,4 +84,12 @@ describe('capture', () => {
     const t1 = new Date().getTime()
     console.log(`${nb} prints in ${t1 - t0}ms`)
   })
+
+  it('make prints of a page that is never idle', async () => {
+    let res = await ax.get('print', { params: { target: 'http://localhost:5607/test/resources/test-timeout.html' }, responseType: 'arraybuffer' })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers['content-type'], 'application/pdf')
+    const content = await pdfParse(res.data)
+    assert.ok(content.text.includes('count:4'))
+  })
 })
