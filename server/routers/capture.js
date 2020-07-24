@@ -53,8 +53,10 @@ router.get('/screenshot', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   if (height > 3000) return res.status(400).send('width too large')
 
   const page = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies, { width, height })
+  debug(`page is opened ${target}`)
   try {
     const buffer = await page.screenshot()
+    debug(`screenshot is taken ${target}`)
     res.type('png')
     if (req.query.filename) res.attachment(req.query.filename)
     res.send(buffer)
@@ -79,6 +81,7 @@ router.get('/print', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   const bottom = req.query.bottom || '1.5cm'
 
   const page = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies)
+  debug(`page is opened ${target}`)
   try {
     const pdfOptions = { landscape, pageRanges, format, margin: { left, right, top, bottom }, printBackground: true }
     if (showFooter) {
@@ -87,6 +90,7 @@ router.get('/print', asyncWrap(auth), asyncWrap(async (req, res, next) => {
       pdfOptions.footerTemplate = headerFooter.footer(footer)
     }
     const buffer = await page.pdf(pdfOptions)
+    debug(`print is taken ${target}`)
     res.type('pdf')
     if (req.query.filename) res.attachment(req.query.filename)
     res.send(buffer)
