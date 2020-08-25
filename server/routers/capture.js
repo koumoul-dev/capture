@@ -5,6 +5,7 @@ const URL = require('url').URL
 const asyncWrap = require('../utils/async-wrap')
 const headerFooter = require('../utils/header-footer')
 const pageUtils = require('../utils/page')
+const animationUtils = require('../utils/animation')
 
 const router = exports.router = express.Router()
 
@@ -51,20 +52,30 @@ router.get('/screenshot', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   }
   if (width > 3000) return res.status(400).send('width too large')
   if (height > 3000) return res.status(400).send('width too large')
+  let type = req.query.type
+  if (!type && req.query.filename && req.query.filename.endsWith('.gif')) type = 'gif'
+  if (!type) type = 'png'
 
-  const page = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies, { width, height })
+  const { page, animationActivated } = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies, { width, height }, type === 'gif')
   debug(`page is opened ${target}`)
   try {
-    let buffer
-    await Promise.race([
-      page.screenshot().then(b => { buffer = b }),
-      new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
-    ])
-    if (!buffer) throw new Error(`Failed to take screenshot of page "${target}" before timeout`)
-    debug(`screenshot is taken ${target}`)
-    res.type('png')
-    if (req.query.filename) res.attachment(req.query.filename)
-    res.send(buffer)
+    if (animationActivated) {
+      const buffer = await animationUtils.capture(target, page, width, height, res)
+      res.type('gif')
+      if (req.query.filename) res.attachment(req.query.filename.replace('.png', '.gif'))
+      res.send(buffer)
+    } else {
+      let buffer
+      await Promise.race([
+        page.screenshot().then(b => { buffer = b }),
+        new Promise(resolve => setTimeout(resolve, config.screenshotTimeout))
+      ])
+      if (!buffer) throw new Error(`Failed to take screenshot of page "${target}" before timeout`)
+      debug(`png screenshot is taken ${target}`)
+      res.type('png')
+      if (req.query.filename) res.attachment(req.query.filename.replace('.gif', '.png'))
+      res.send(buffer)
+    }
   } finally {
     pageUtils.close(page, req.cookies)
   }
@@ -85,7 +96,7 @@ router.get('/print', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   const top = req.query.top || '1.5cm'
   const bottom = req.query.bottom || '1.5cm'
 
-  const page = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies)
+  const { page } = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies)
   debug(`page is opened ${target}`)
   try {
     const pdfOptions = { landscape, pageRanges, format, margin: { left, right, top, bottom }, printBackground: true }

@@ -29,3 +29,6 @@ Check the service with these examples:
   - [custom timezone](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/resources/test1.html&timezone=America/Bogota)
   - [download with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&target=http://localhost:5607/test/resources/test1.html&filename=test.png)
   - [simple pdf print](http://localhost:5607/api/v1/print?key=capture&target=http://localhost:5607/test/resources/test1.html)
+  - [animated gif screenshot](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&target=http://localhost:5607/test/resources/test-anim.html)
+  - [animated gif screenshot with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&filename=test.gif&target=http://localhost:5607/test/resources/test-anim.html)
+  - [fallback to standard screenshot with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&filename=test.gif&target=http://localhost:5607/test/resources/test1.html)

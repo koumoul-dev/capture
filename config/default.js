@@ -10,5 +10,6 @@ module.exports = {
   defaultTimezone: 'Europe/Paris',
   secretKeys: {
     capture: null
-  }
+  },
+  maxAnimationFrames: 1800 // 2 minutes at 15fps
 }

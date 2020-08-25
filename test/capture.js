@@ -92,4 +92,23 @@ describe('capture', () => {
     const content = await pdfParse(res.data)
     assert.ok(content.text.includes('count3') || content.text.includes('count:4') || content.text.includes('count:5'))
   })
+
+  it('make animated gif screenshot of a page', async () => {
+    let res = await ax.get('screenshot', { params: { target: 'http://localhost:5607/test/resources/test-anim.html', type: 'gif' } })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers['content-type'], 'image/gif')
+    const size1 = Number(res.headers['content-length'])
+    assert.ok(size1 < 50000)
+
+    res = await ax.get('screenshot', { params: { target: 'http://localhost:5607/test/resources/test-anim.html', filename: 'test.gif' } })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers['content-type'], 'image/gif')
+    assert.equal(res.headers['content-disposition'], 'attachment; filename="test.gif"')
+
+    res = await ax.get('screenshot', { params: { target: 'http://localhost:5607/test/resources/test-anim.html' } })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers['content-type'], 'image/png')
+    const size2 = Number(res.headers['content-length'])
+    assert.ok(size2 < 15000)
+  })
 })

@@ -43,27 +43,27 @@ exports.stop = async () => {
   }
 }
 
-async function openInContext(context, target, lang, timezone, cookies, viewport) {
+async function openInContext(context, target, lang, timezone, cookies, viewport, animate) {
   const page = await context.newPage()
   await setPageLocale(page, lang || config.defaultLang, timezone || config.defaultTimezone)
   if (cookies) await page.setCookie.apply(page, cookies)
   if (viewport) await page.setViewport(viewport)
-  await waitForPage(page, target)
-  return page
+  const animationActivated = await waitForPage(page, target, animate)
+  return { page, animationActivated }
 }
 
-exports.open = async (target, lang, timezone, cookies, viewport) => {
+exports.open = async (target, lang, timezone, cookies, viewport, animate) => {
   const context = await _contextPool.acquire()
-  let page
+  let result
   try {
     await Promise.race([
-      openInContext(context, target, lang, timezone, cookies, viewport).then(p => { page = p }),
+      openInContext(context, target, lang, timezone, cookies, viewport, animate).then(r => { result = r }),
       new Promise(resolve => setTimeout(resolve, config.screenshotTimeout * 2))
     ])
-    if (!page) throw new Error(`Failed to open "${target}" in context before timeout`)
-    return page
+    if (!result) throw new Error(`Failed to open "${target}" in context before timeout`)
+    return result
   } catch (err) {
-    await safeCleanContext(page, cookies, context)
+    await safeCleanContext(result.page, cookies, context)
     throw err
   }
 }
@@ -100,13 +100,17 @@ const safeCleanContext = async (page, cookies, context) => {
 
 // quite complex strategy to wait for the page to be ready for capture.
 // it can either explitly call a triggerCapture function or we wait for idle network + 1s
-const waitForPage = async (page, target) => {
+const waitForPage = async (page, target, animate) => {
   // Prepare a function that the page can call to signal that it is ready for capture
   let captureTriggered = false
   let timeoutReached = false
-  const triggerCapture = new Promise(resolve => page.exposeFunction('triggerCapture', () => {
+  let animationActivated = false
+  const triggerCapture = new Promise(resolve => page.exposeFunction('triggerCapture', (animationSupported) => {
     captureTriggered = true
+    animationActivated = animate && animationSupported
     resolve()
+    // return animate to the page inside the capture
+    return animate
   }))
 
   try {
@@ -148,6 +152,7 @@ const waitForPage = async (page, target) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
+  return animationActivated
 }
 
 const setPageLocale = async (page, lang, timezone) => {

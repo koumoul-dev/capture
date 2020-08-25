@@ -43,8 +43,11 @@
       Proin nulla urna, blandit eu purus nec, auctor cursus lacus. Quisque suscipit nibh ullamcorper rutrum blandit. Proin gravida odio consectetur fringilla bibendum. Sed commodo magna in gravida ornare. Aliquam id molestie eros. Sed eget hendrerit nulla, non tincidunt neque. Proin blandit eleifend nisi eget rhoncus. Duis id tellus vel felis dapibus facilisis. Maecenas ut elit lectus. Etiam fringilla venenatis rutrum. Sed a pulvinar lorem, id dapibus ipsum.
     </p>
     <script>
+
       setTimeout(() => {
-        window.triggerCapture()
+        if (window.triggerCapture) {
+          window.triggerCapture()
+        }
       }, 100)
 
       document.getElementById('lang').innerHTML = JSON.stringify(navigator.languages)
