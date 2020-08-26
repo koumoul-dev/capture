@@ -19,6 +19,7 @@ exports.capture = async (target, page, width, height, res) => {
   let i = 0
   while (!stopped && i < config.maxAnimationFrames) {
     i++
+    if (i % 15 === 0) debug(`${i} frames taken of ${target}`)
     stopped = await page.evaluate(() => window.animateCaptureFrame())
     let buffer
     await Promise.race([
