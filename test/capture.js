@@ -111,4 +111,10 @@ describe('capture', () => {
     const size2 = Number(res.headers['content-length'])
     assert.ok(size2 < 15000)
   })
+
+  it('convert screenshot to jpg', async () => {
+    let res = await ax.get('screenshot', { params: { target, type: 'jpg' } })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers['content-type'], 'image/jpeg')
+  })
 })

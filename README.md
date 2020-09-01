@@ -32,3 +32,5 @@ Check the service with these examples:
   - [animated gif screenshot](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&target=http://localhost:5607/test/resources/test-anim.html)
   - [animated gif screenshot with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&filename=test.gif&target=http://localhost:5607/test/resources/test-anim.html)
   - [fallback to standard screenshot with custom filename](http://localhost:5607/api/v1/screenshot?key=capture&type=gif&filename=test.gif&target=http://localhost:5607/test/resources/test1.html)
+  - [screenshot converted to jpg](http://localhost:5607/api/v1/screenshot?key=capture&type=jpg&target=http://localhost:5607/test/resources/test-anim.html)
+  - [screenshot with custom jpg filename](http://localhost:5607/api/v1/screenshot?key=capture&filename=test.jpg&target=http://localhost:5607/test/resources/test-anim.html)

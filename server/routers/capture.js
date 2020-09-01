@@ -2,6 +2,7 @@ const config = require('config')
 const express = require('express')
 const debug = require('debug')('capture')
 const URL = require('url').URL
+const jimp = require('jimp')
 const asyncWrap = require('../utils/async-wrap')
 const headerFooter = require('../utils/header-footer')
 const pageUtils = require('../utils/page')
@@ -54,6 +55,7 @@ router.get('/screenshot', asyncWrap(auth), asyncWrap(async (req, res, next) => {
   if (height > 3000) return res.status(400).send('width too large')
   let type = req.query.type
   if (!type && req.query.filename && req.query.filename.endsWith('.gif')) type = 'gif'
+  if (!type && req.query.filename && (req.query.filename.endsWith('.jpeg') || req.query.filename.endsWith('.jpg'))) type = 'jpg'
   if (!type) type = 'png'
 
   const { page, animationActivated } = await pageUtils.open(target, req.query.lang, req.query.timezone, req.cookies, { width, height }, type === 'gif')
@@ -73,8 +75,14 @@ router.get('/screenshot', asyncWrap(auth), asyncWrap(async (req, res, next) => {
       ])
       if (!buffer) throw new Error(`Failed to take screenshot of page "${target}" before timeout`)
       debug(`png screenshot is taken ${target}`)
-      res.type('png')
-      if (req.query.filename) res.attachment(req.query.filename.replace('.gif', '.png'))
+      if (type === 'jpg') {
+        debug(`convert png screenshot to jpg`)
+        const image = await jimp.read(buffer)
+        image.quality(90)
+        buffer = await image.getBufferAsync(jimp.MIME_JPEG)
+      }
+      res.type(type)
+      if (req.query.filename) res.attachment(req.query.filename.replace('.gif', '.' + type))
       res.send(buffer)
     }
   } finally {
