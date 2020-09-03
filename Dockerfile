@@ -48,6 +48,7 @@ ADD package-lock.json .
 RUN npm install --production
 ADD server server
 ADD config config
+ADD contract contract
 ADD README.md .
 ADD test test
 
