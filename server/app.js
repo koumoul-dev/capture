@@ -6,6 +6,7 @@ const eventToPromise = require('event-to-promise')
 const proxy = require('http-proxy-middleware')
 const capture = require('./routers/capture')
 const pageUtils = require('./utils/page')
+const apiDocs = require('../contract/api-docs')
 const app = express()
 
 if (!config.directoryUrl) {
@@ -30,6 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/v1', capture.router)
+app.get('/api/v1/api-docs.json', (req, res, next) => res.send(apiDocs))
 app.use('/test', express.static('./test'))
 
 // Error management
