@@ -30,7 +30,7 @@ async function auth(req, res, next) {
   }
 
   if (sameHost) {
-    debug(`${target} is on same host as capture service, transmit cookies`)
+    debug(`${target} is on same host as capture service, transmit cookies`, Object.keys(req.cookies))
     req.cookies = Object.keys(req.cookies).map(name => ({ name, value: req.cookies[name], url: target }))
   } else {
     debug(`${target} is NOT on same host as capture service, do NOT transmit cookies`)
